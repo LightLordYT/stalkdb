@@ -1,5 +1,5 @@
-const express = require('express')
-const Sequelize = require('sequelize')
+import express from 'express'
+import Sequelize from 'sequelize'
 const app = express()
 
 const sequelize = new Sequelize('', '', '', {
@@ -29,24 +29,43 @@ const User = sequelize.define('user', {
     timestamps: false
 })
 
-app.use('/', express.static('public'))
 app.use(express.json())
+
+
+app.use(express.static('public'))
 
 //dynamic url
 app.get('/:ip', (req, res) => {
     let user = req.params.ip
+    if(user !== ''){
+        res.send('dont mess with me')
+    }else{
+        return User.findAll().then((data) => {
+            res.send(data)
+        })
+    }
 }) 
 
 app.post('/:ip', (req, res) => {
     let user = req.params.ip
     let data = JSON.parse(req.body)
-    //if user is not in database create it then add data to table
-    //else just update it
-})
+            if(user !== ''){
+                res.send('dont mess with me')
+            }else{
+                return User.create({
+                    tab: data.tab,
+                    date: data.date,
+                    time: data.time,
+                    ms: data.ms
+                }).then(() => {
+                    console.log('data inserted to database')
+                    res.send('successful')
+                })
+            }
+    })
 
-User.sync().then(() => {
-    console.log('db synced')
-})
+
+User.sync({ alter: true })
 
 app.listen(8080, () => console.log('server started'))
 sequelize.authenticate().then(() => console.log('Connected to database'))
